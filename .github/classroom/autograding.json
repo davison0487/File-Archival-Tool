@@ -1,0 +1,84 @@
+{
+  "tests": [
+    {
+      "name": "Compile",
+      "setup": "make",
+      "run": "./hw2 compile",
+      "input": "",
+      "output": "Compile test PASS",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 10
+    },
+    {
+      "name": "Add",
+      "setup": "make",
+      "run": "./hw2 add",
+      "input": "",
+      "output": "Add test PASS",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 15
+    },
+    {
+      "name": "Extract",
+      "setup": "make",
+      "run": "./hw2 extract",
+      "input": "",
+      "output": "Extract test PASS",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 15
+    },
+    {
+      "name": "Remove",
+      "setup": "make",
+      "run": "./hw2 remove",
+      "input": "",
+      "output": "Remove test PASS",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 15
+    },
+    {
+      "name": "List",
+      "setup": "make",
+      "run": "./hw2 list",
+      "input": "",
+      "output": "List test PASS",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 10
+    },
+    {
+      "name": "Dump",
+      "setup": "make",
+      "run": "./hw2 dump",
+      "input": "",
+      "output": "Dump test PASS",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 10
+    },
+    {
+      "name": "Compact",
+      "setup": "make",
+      "run": "./hw2 compact",
+      "input": "",
+      "output": "Compact test PASS",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 10
+    },
+    {
+      "name": "Stress",
+      "setup": "make",
+      "run": "./hw2 stress",
+      "input": "",
+      "output": "Stress test PASS",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 10
+    }
+  ]
+}

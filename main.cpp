@@ -8,6 +8,7 @@
 #include <iostream>
 #include "Testing.hpp"
 #include <cstdlib>
+#include <time.h>
 
 std::string getLocalFolder() {
   return std::string("/tmp"); //PATH TO LOCAL ARCHIVE FOLDER

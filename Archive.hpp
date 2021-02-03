@@ -2,7 +2,7 @@
 //  Archive.hpp
 //  RGAssignment2
 //
-//  Created by rick gessner on 1/24/21.
+//  Created by Yunhsiu Wu on 2/2/21.
 //
 
 #ifndef Archive_hpp
@@ -10,21 +10,30 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 
 namespace ECE141 {
   
   enum class ActionType {added, extracted, removed, listed, dumped};
 
   struct ArchiveObserver {
-    void operator()(ActionType anAction,
-                    const std::string &aName, bool status);
+    virtual void operator()(ActionType anAction,
+                    const std::string &aName, bool status) =0;
   };
   
   //---------------------------------------------------
 
   class Archive {
   protected:
-              Archive();  //protected on purpose!
+	  // file stream
+	  std::fstream arcFile;
+
+	  //full archive path
+	  const std::string archivePath;
+
+	  Archive(std::string& aFullPath) :archivePath(aFullPath) {};  //protected on purpose!
 
   public:
 
@@ -35,7 +44,7 @@ namespace ECE141 {
 
     Archive&  addObserver(ArchiveObserver &anObserver);
     
-    bool      add(const std::string &aFilename);
+    bool      add(const std::string& aFullPath);
     bool      extract(const std::string &aFilename, const std::string &aFullPath);
     bool      remove(const std::string &aFilename);
     

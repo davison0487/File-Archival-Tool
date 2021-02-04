@@ -27,7 +27,7 @@ struct arcHeader {
 
 		time_t now;
 		time(&now);
-		localtime(&addDate, &now);
+		addDate = localtime(&now);
 	}
 };
 

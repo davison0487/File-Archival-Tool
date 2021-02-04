@@ -200,7 +200,7 @@ bool Archive::extract(const std::string& aFilename, const std::string& aFullPath
 	}
 
 	//out file stream
-	std::fstream outFile(aFullPath, std::ios::binary, std::ios::out);
+	std::fstream outFile(aFullPath, std::ios::binary | std::ios::out);
 	outFile.seekp(0);
 
 	//search for match file

@@ -75,7 +75,7 @@ namespace ECE141 {
 
 		size_t addTestFiles(Archive& anArchive, char aChar = 'A') {
 			char theExt[20];
-			sprintf(theExt, "%c.txt", aChar);
+			sprintf_s(theExt, "%c.txt", aChar);
 			anArchive.add(folder + "/small" + theExt);
 			anArchive.add(folder + "/medium" + theExt);
 			anArchive.add(folder + "/large" + theExt);
@@ -105,11 +105,12 @@ namespace ECE141 {
 				std::stringstream theStream;
 				theArchive->list(theStream);
 				theCount = theArchive->list(theStream);
+				//theArchive->debugDump(std::cout);
 				delete theArchive;
 			}
 
 			if (theCount == theAddCount) {
-				std::string theArcName(folder + "/fake.arc");
+				std::string theArcName(folder + "/addtest.arc");
 				return hasMinSize(theArcName, 6144);
 			}
 

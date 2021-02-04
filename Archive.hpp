@@ -16,22 +16,26 @@
 
 namespace ECE141 {
   
-  enum class ActionType {added, extracted, removed, listed, dumped};
+  enum class ActionType {added, extracted, removed, listed, dumped, compacted};
 
   struct ArchiveObserver {
-    virtual void operator()(ActionType anAction,
-                    const std::string &aName, bool status) =0;
+	  virtual void operator() (ActionType anAction,
+		                       const std::string& aName,
+		                       bool status) = 0;
   };
   
   //---------------------------------------------------
 
   class Archive {
   protected:
-	  // file stream
+	  //file stream
 	  std::fstream arcFile;
 
 	  //full archive path
 	  const std::string archivePath;
+
+	  //observer list
+	  std::vector<ArchiveObserver*> observerList;
 
 	  Archive(std::string& aFullPath) :archivePath(aFullPath) {};  //protected on purpose!
 
@@ -43,6 +47,7 @@ namespace ECE141 {
     static    Archive* openArchive(const std::string &anArchiveName);
 
     Archive&  addObserver(ArchiveObserver &anObserver);
+	void notifyObserver(ActionType anAction, const std::string& aName, bool status);
     
     bool      add(const std::string& aFullPath);
     bool      extract(const std::string &aFilename, const std::string &aFullPath);

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <ctime>
 
 using namespace ECE141;
 
@@ -18,10 +19,15 @@ using namespace ECE141;
 struct arcHeader {
 	size_t validSize;
 	char name[30];
+	tm addDate;
 
 	arcHeader() {
 		validSize = 0;
 		name[0] = '\0';
+
+		time_t now;
+		time(&now);
+		localtime_s(&addDate, &now);
 	}
 };
 
@@ -70,10 +76,22 @@ Archive* Archive::openArchive(const std::string& anArchiveName) {
 	return newArchive;
 }
 
+Archive& Archive::addObserver(ArchiveObserver& anObserver) {
+	observerList.push_back(&anObserver);
+	return *this;
+}
+
+void Archive::notifyObserver(ActionType anAction, const std::string& aName, bool status) {
+	for (auto* obs : observerList) {
+		(*obs)(anAction, aName, status);
+	}
+}
+
 bool Archive::add(const std::string& aFullPath) {
 	std::fstream inFile(aFullPath, std::ios::binary | std::ios::in);
 	if (!inFile) {
 		std::cout << "Failed to open file!\n";
+		notifyObserver(ActionType::added, aFullPath, false);
 		return false;
 	}
 
@@ -93,6 +111,7 @@ bool Archive::add(const std::string& aFullPath) {
 		std::string blockFileName(blockHeader.name);
 		if (inFileName == blockFileName) {
 			std::cout << "File already exist in archive!\n";
+			notifyObserver(ActionType::added, aFullPath, false);
 			return false;
 		}
 	}
@@ -126,14 +145,16 @@ bool Archive::add(const std::string& aFullPath) {
 			inFile.read(dataCache, validDataSize);
 			arcFile.seekp(blockPos);
 			arcFile.write(reinterpret_cast<char*>(&inFileHeader), headerSize);
-			arcFile.write(dataCache, validDataSize);
+			arcFile.write(dataCache, dataSize);
 		}
 	}
 	
 	//if there are still more data to write
 	arcFile.seekp(0, arcFile.end);
+	
 	while (inFile.tellg() != inFileSize) {
 		//set up header
+		int temp = inFile.tellg();
 		size_t validDataSize = inFileSize - inFile.tellg() > dataSize ? dataSize : inFileSize - inFile.tellg();
 		arcHeader inFileHeader;
 		inFileHeader.validSize = validDataSize;
@@ -145,9 +166,10 @@ bool Archive::add(const std::string& aFullPath) {
 		char dataCache[dataSize];
 		inFile.read(dataCache, validDataSize);
 		arcFile.write(reinterpret_cast<char*>(&inFileHeader), headerSize);
-		arcFile.write(dataCache, validDataSize);
+		arcFile.write(dataCache, dataSize);
 	}
 
+	notifyObserver(ActionType::added, aFullPath, true);
 	inFile.close();
 	return true;
 }
@@ -173,6 +195,7 @@ bool Archive::extract(const std::string& aFilename, const std::string& aFullPath
 
 	if (!fileExist) {
 		std::cout << "File does not exists!\n";
+		notifyObserver(ActionType::extracted, aFilename, false);
 		return false;
 	}
 
@@ -195,6 +218,7 @@ bool Archive::extract(const std::string& aFilename, const std::string& aFullPath
 		}
 	}
 
+	notifyObserver(ActionType::extracted, aFilename, true);
 	outFile.close();
 	return true;
 }
@@ -222,13 +246,17 @@ bool Archive::remove(const std::string& aFilename) {
 			arcFile.write(reinterpret_cast<char*>(&blockHeader), headerSize);
 		}
 	}
-	if (!fileExist)
+	if (!fileExist) {
 		std::cout << "File does not exist in archive!\n";
+	}
+
+	notifyObserver(ActionType::removed, aFilename, fileExist);
 	return fileExist;
-};
+}
 
 size_t Archive::list(std::ostream& aStream) {
 	std::unordered_map<std::string, int> fileList;
+	std::unordered_map<std::string, tm> fileDate;
 
 	//get acrhive size
 	arcFile.seekg(0, arcFile.end);
@@ -242,19 +270,31 @@ size_t Archive::list(std::ostream& aStream) {
 		arcFile.read(reinterpret_cast<char*>(&blockHeader), headerSize);
 		std::string blockFileName(blockHeader.name);
 		
-		if (blockHeader.validSize != 0)
+		if (blockHeader.validSize != 0) {
 			fileList[blockFileName] += blockHeader.validSize;
+			if (!fileDate.count(blockFileName))
+				fileDate[blockFileName] = blockHeader.addDate;
+		}
 	}
 
 	aStream << "###  name         size       \n";
 	aStream << "-----------------------------\n";
 
 	int i = 1;
-	for (auto cur : fileList)
-		aStream << i++ << ".\t" << cur.first << "\t" << cur.second << std::endl;
-
+	for (auto cur : fileList) {
+		aStream << i << ".\t" << cur.first << "\t" << cur.second << std::endl;
+		aStream << fileDate[cur.first].tm_year + 1900 << "-" 
+			    << fileDate[cur.first].tm_mon + 1     << "-" 
+			    << fileDate[cur.first].tm_mday        << " ";
+		aStream << fileDate[cur.first].tm_hour        << ":" 
+			    << fileDate[cur.first].tm_min         << ":" 
+			    << fileDate[cur.first].tm_sec         << "\n";
+		++i;
+	}
+	
+	notifyObserver(ActionType::listed, "", true);
 	return fileList.size();
-};
+}
 
 size_t Archive::debugDump(std::ostream& aStream) {
 	aStream << "###  status   name     \n";
@@ -285,8 +325,10 @@ size_t Archive::debugDump(std::ostream& aStream) {
 
 		++blockCounts;
 	}
+
+	notifyObserver(ActionType::dumped, "", true);
 	return blockCounts;
-};
+}
 
 size_t Archive::compact() {
 	//close current archive and rename to temp.arc
@@ -337,7 +379,7 @@ size_t Archive::compact() {
 			char dataCache[dataSize];
 			oldArcFile.read(dataCache, blockHeader.validSize);
 			arcFile.write(reinterpret_cast<char*>(&blockHeader), headerSize);
-			arcFile.write(dataCache, blockHeader.validSize);
+			arcFile.write(dataCache, dataSize);
 			++newblockCount;
 		}
 	}
@@ -345,5 +387,6 @@ size_t Archive::compact() {
 	//delete old archive (.../temp.arc)
 	remove(tmpName);
 
+	notifyObserver(ActionType::compacted, "", true);
 	return newblockCount;
 }

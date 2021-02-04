@@ -12,6 +12,8 @@
 #include <vector>
 #include <unordered_map>
 #include <ctime>
+#include <cstdio>
+
 
 using namespace ECE141;
 
@@ -247,9 +249,8 @@ bool Archive::remove(const std::string& aFilename) {
 			arcFile.write(reinterpret_cast<char*>(&blockHeader), headerSize);
 		}
 	}
-	if (!fileExist) {
+	if (!fileExist)
 		std::cout << "File does not exist in archive!\n";
-	}
 
 	notifyObserver(ActionType::removed, aFilename, fileExist);
 	return fileExist;
@@ -386,7 +387,8 @@ size_t Archive::compact() {
 	}
 
 	//delete old archive (.../temp.arc)
-	remove(tmpName);
+	oldArcFile.close();
+	std::remove(tmpName);
 
 	notifyObserver(ActionType::compacted, "", true);
 	return newblockCount;

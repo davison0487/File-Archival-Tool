@@ -75,7 +75,8 @@ namespace ECE141 {
 
 		size_t addTestFiles(Archive& anArchive, char aChar = 'A') {
 			char theExt[20];
-			sprintf_s(theExt, "%c.txt", aChar);
+			sprintf(theExt, "%c.txt", aChar);       //autograder version
+			//sprintf_s(theExt, "%c.txt", aChar);   //windows version
 			anArchive.add(folder + "/small" + theExt);
 			anArchive.add(folder + "/medium" + theExt);
 			anArchive.add(folder + "/large" + theExt);

@@ -28,8 +28,8 @@ struct arcHeader {
 
 		time_t now;
 		time(&now);
-		//addDate = *localtime(&now);      //for autograder
-		localtime_s(&addDate, &now);   //for windows 
+		addDate = *localtime(&now);      //for autograder
+		//localtime_s(&addDate, &now);   //for windows 
 	}
 };
 

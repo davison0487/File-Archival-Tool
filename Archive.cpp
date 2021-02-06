@@ -14,7 +14,6 @@
 #include <ctime>
 #include <cstdio>
 
-
 using namespace ECE141;
 
 // Header for archived files

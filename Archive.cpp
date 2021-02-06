@@ -28,8 +28,8 @@ struct arcHeader {
 
 		time_t now;
 		time(&now);
-		addDate = *localtime(&now);      //for autograder
-		//localtime_s(&addDate, &now);   //for windows 
+		//addDate = *localtime(&now);      //for autograder
+		localtime_s(&addDate, &now);   //for windows 
 	}
 };
 
@@ -66,6 +66,7 @@ Archive* Archive::createArchive(const std::string& anArchiveName) {
 
 Archive* Archive::openArchive(const std::string& anArchiveName) {
 	std::string fileName(anArchiveName);
+	fileName += ".arc";
 	Archive* newArchive = new Archive(fileName);
 
 	//read existed archive file

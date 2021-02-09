@@ -68,7 +68,7 @@ namespace ECE141 {
     }
     
     ~Testing() {
-      std::cout << "Test Version 2.5\n";
+      std::cout << "Test Version 2.7\n";
     }
         
     bool doCompileTest() {
@@ -185,16 +185,16 @@ namespace ECE141 {
       std::ifstream theFile1(theFilePath);
       std::ifstream theFile2(aFullPath);
 
-      std::string theLine1;
-      std::string theLine2;
-
       if(theFile1 && theFile2){
+        std::string theLine1;
+        std::string theLine2;
         while(std::getline(theFile1,theLine1)) {
           std::getline(theFile2,theLine2);
           if(theLine1!=theLine2) return false;
         }
+        return true;
       }
-      return true;
+      return false;
     }
     
     //-------------------------------------------
@@ -203,7 +203,8 @@ namespace ECE141 {
       static const char* theFiles[]={
         "smallA.txt","mediumA.txt","largeA.txt"};
       size_t theCount=sizeof(theFiles)/sizeof(char*);
-      return theFiles[rand() % theCount];
+      size_t temp=(rand() % theCount);
+      return theFiles[temp];
     }
     
     bool doExtractTest() {
@@ -214,7 +215,6 @@ namespace ECE141 {
         addTestFiles(*theArchive);
         std::stringstream theStream;
         std::string theFileName=pickRandomFile();
-        
         std::string temp(folder+"/out.txt");
         theArchive->extract(theFileName, temp);
         theResult=filesMatch(theFileName,temp);
@@ -481,8 +481,9 @@ namespace ECE141 {
           size_t thePreCount=doStressDump(*theArchive, thePreFreeCount);
                  
           delete theArchive; //UNCOMMENT!
-
-          size_t thePreSize= getFileSize(thePath);
+          
+          std::string theTempName(thePath+".arc");
+          size_t thePreSize= getFileSize(theTempName);
 
           theArchive = Archive::openArchive(thePath); //UNCOMMENT
           
@@ -499,7 +500,7 @@ namespace ECE141 {
             delete theArchive; //close compacted archive
             
             if(theResult) { //compacted file should be smaller...
-              size_t thePostSize= getFileSize(thePath);
+              size_t thePostSize= getFileSize(theTempName);
               theResult = thePostSize<=thePreSize;
             }
           } //if
